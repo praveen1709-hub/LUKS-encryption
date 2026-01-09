@@ -1,5 +1,4 @@
-PART 1: PREPARATION (5 minutes)
-
+PART 1: PREPARATION 
 Step 1: Stop Services
 bash
 sudo systemctl stop myapp.servicesudo systemctl status myapp.service
@@ -42,7 +41,7 @@ Step 10: Set Permissions
 bash
 sudo chown -R serviceuser:serviceuser /mnt/secureapp_mount/secureappsudo chmod 700 /mnt/secureapp_mount/secureappsudo chmod 700 /mnt/secureapp_mount/secureapp/*.py
 
-PART 3: HARDWARE-BOUND ENCRYPTION KEY (10 minutes)
+PART 3: HARDWARE-BOUND ENCRYPTION KEY 
 
 Step 11: Get Your Pi's Unique Hardware Identifiers
 bash# Get Serial 
@@ -57,7 +56,7 @@ COMBINED="VideoAnalyzer:${SERIAL}:${MAC}:${CORES}:proprietary2025" 
 GENERATED_KEY=$(echo -n "$COMBINED" | sha256sum | cut -d' ' -f1) echo "Your hardware key: $GENERATED_KEY" 
 # Add this to LUKS echo -n "$GENERATED_KEY" | sudo cryptsetup luksAddKey /opt/secureapp.img -# Enter the ORIGINAL LUKS password from Step 5 
 
-PART 4: CREATE AUTO-UNLOCK SCRIPT (5 minutes)
+PART 4: CREATE AUTO-UNLOCK SCRIPT
 
 Step 13: Create the Auto-Unlock Script
 bash
@@ -79,7 +78,7 @@ sudo /usr/local/bin/unlock-secureapp.sh
 sudo tail -f /var/log/secureapp-unlock.log
 # Should show: SUCCESS: Hardware verified and container mounted 
 
-PART 5: CREATE SYSTEMD SERVICES (10 minutes)
+PART 5: CREATE SYSTEMD SERVICES 
 
 Step 15: Create Unlock Service
 bash
@@ -132,8 +131,7 @@ bash# Check if mounted mount | grep secureapp_crypt# Test client pytho
 Step 20: Cleanup
 bashsudo rm -rf /opt/secureapp
 
-PART 6: GRUB BOOT PROTECTION (10 minutes)
-
+PART 6: GRUB BOOT PROTECTION
 Step 21: Install GRUB
 bashsudo apt install -y grub-efi-arm64 grub-efi-arm64-bin
 
@@ -151,7 +149,7 @@ Save: Ctrl+X → Y → Enter
 Step 24: Update GRUB
 bashsudo update-grub 
 
-PART 7: IMMUTABLE FILES (10 minutes)
+PART 7: IMMUTABLE FILES 
 
 Step 25: Make Sudoers Immutable
 bashsudo chattr +i /etc/sudoerssudo chattr +i /etc/sudoers.d/for file in /etc/sudoers.d/*; do     sudo chattr +i "$file" done sudo lsattr /etc/sudoers
@@ -159,7 +157,7 @@ bashsudo chattr +i /etc/sudoerssudo chattr +i /etc/sudoers.d/for file in
 Step 26: Make Auth Files Immutable
 bashsudo chattr +i /etc/shadowsudo chattr +i /etc/passwdsudo chattr +i /etc/gshadowsudo chattr +i /etc/groupsudo lsattr /etc/shadow /etc/passwd
 
-PART 8: TESTING (15 minutes)
+PART 8: TESTING 
 
 Step 27: Reboot
 bashsudo reboot # Wait for boot to complete 
@@ -179,13 +177,12 @@ bashsudo reboot # At boot menu, try to press 'e' # Should ask for 
 Step 32: Verify Immutable
 bashsudo nano /etc/sudoers# Try to save changes # Result: File is read-only exit 
 
-PART 9: DOCUMENT (5 minutes)
-
+PART 9: DOCUMENT 
 Step 33: Create Recovery Document
 bashsudo nano /root/SECUREAPP_RECOVERY.txt
 
 PASTE THIS:
-textDATE: December 19, 2025⚠️ CRITICAL PASSWORDS:1. LUKS Password: [Your password from Step 5]2. GRUB Password: [Your password from Step 22]IF CONTAINER WON'T UNLOCK:  sudo journalctl -u unlock-secureapp.service -n 50  sudo cryptsetup luksOpen /opt/secureapp.img secureapp_crypt  sudo mount /dev/mapper/secureapp_crypt /mnt/secureapp_mountIF GRUB PASSWORD FORGOTTEN:  Boot from USB → Mount /boot → Edit /etc/grub.d/40_custom  Comment out password_pbkdf2 line → sudo update-grubHARDWARE-BOUND KEY:  This Pi's key is in /usr/local/bin/unlock-secureapp.sh  It uses: Serial + MAC + CPU Cores → sha256 hash  Cannot be used on another Pi
+textDATE: December 19, 2025 CRITICAL PASSWORDS:1. LUKS Password: [Your password from Step 5]2. GRUB Password: [Your password from Step 22]IF CONTAINER WON'T UNLOCK:  sudo journalctl -u unlock-secureapp.service -n 50  sudo cryptsetup luksOpen /opt/secureapp.img secureapp_crypt  sudo mount /dev/mapper/secureapp_crypt /mnt/secureapp_mountIF GRUB PASSWORD FORGOTTEN:  Boot from USB → Mount /boot → Edit /etc/grub.d/40_custom  Comment out password_pbkdf2 line → sudo update-grubHARDWARE-BOUND KEY:  This Pi's key is in /usr/local/bin/unlock-secureapp.sh  It uses: Serial + MAC + CPU Cores → sha256 hash  Cannot be used on another Pi
 
 Save: Ctrl+X → Y → Enter
 
@@ -193,5 +190,5 @@ Step 34: Protect Document
 bash
 sudo chmod 600 /root/SECUREAPP_RECOVERY.txt
 
-bash# ✅ Encryption mounted mount | grep secureapp_crypt# ✅ Services running sudo systemctl status unlock-secureapp.servicesudo systemctl status myapp.service# ✅ File permissions ls -ld /mnt/secureapp_mount/secureapp/# ✅ GRUB password sudo grep -i "password_pbkdf2" /etc/grub.d/40_custom# ✅ Immutable files sudo lsattr /etc/sudoers /etc/passwd# ✅ Client works python3 ~/client.py calculate 10 # ✅ enduser blocked su - endusercat /mnt/secureapp_mount/secureapp/main_script.py  # FAILS exit 
+bash#  Encryption mounted mount | grep secureapp_crypt#  Services running sudo systemctl status unlock-secureapp.servicesudo systemctl status myapp.service#  File permissions ls -ld /mnt/secureapp_mount/secureapp/#  GRUB password sudo grep -i "password_pbkdf2" /etc/grub.d/40_custom#  Immutable files sudo lsattr /etc/sudoers /etc/passwd#  Client works python3 ~/client.py calculate 10 #  enduser blocked su - endusercat /mnt/secureapp_mount/secureapp/main_script.py  # FAILS exit 
 
